@@ -1,5 +1,7 @@
 package io.mshare.criminalintent
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -14,15 +16,29 @@ import kotlinx.android.synthetic.main.list_item_crime.*
 import kotlinx.android.synthetic.main.list_item_crime.view.*
 
 class CrimeListFragment : Fragment() {
-    private lateinit var mAdapter: CrimeAdapter
+    private var mAdapter: CrimeAdapter? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         view.crime_recycler_view.layoutManager = LinearLayoutManager(activity)
 
-        val crimes = CrimeLab.getCrimes()
-        mAdapter = CrimeAdapter(crimes)
-        view.crime_recycler_view.adapter = mAdapter
+
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateUI()
+    }
+
+    fun updateUI() {
+
+        val crimes = CrimeLab.getCrimes()
+        if (mAdapter == null) {
+            mAdapter = CrimeAdapter(crimes)
+            view?.crime_recycler_view?.adapter = mAdapter
+        } else {
+            mAdapter?.notifyDataSetChanged()
+        }
     }
 
     private inner class CrimeHolder : RecyclerView.ViewHolder, View.OnClickListener {
@@ -34,10 +50,20 @@ class CrimeListFragment : Fragment() {
         fun bind(crime: Crime) {
             mCrime = crime
             itemView.tv_title.text = crime.mTitle
+            itemView.crime_date.text = crime.mDate.toString()
+            itemView.crime_solved.visibility = if (crime.mSolved) View.VISIBLE else View.GONE
         }
 
         override fun onClick(p0: View?) {
-            Toast.makeText(activity, "${mCrime?.mTitle ?: ""} clicked", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(activity, "${mCrime?.mTitle ?: ""} clicked", Toast.LENGTH_SHORT).show();
+//            val intent = Intent(activity, CrimeActivity::class.java)
+            if (activity != null && mCrime != null) {
+//                val intent = CrimeActivity.newIntent(activity as Context, mCrime!!.mId)
+                val intent = CrimePagerActivity.newIntent(activity as Context, mCrime!!.mId)
+                startActivity(intent)
+            }
+
+
         }
     }
 
