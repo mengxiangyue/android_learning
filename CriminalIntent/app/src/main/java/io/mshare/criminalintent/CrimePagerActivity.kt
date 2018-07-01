@@ -27,7 +27,7 @@ class CrimePagerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_crime_pager)
 
         val crimeId = intent.getSerializableExtra(EXTRA_CRIME_ID)
-        mCrimes = CrimeLab.getCrimes()
+        mCrimes = CrimeLab.getInstance(this).getCrimes()
         crime_view_pager.adapter = object : FragmentStatePagerAdapter(supportFragmentManager) {
             override fun getItem(position: Int): Fragment {
                 val crime = mCrimes[position]

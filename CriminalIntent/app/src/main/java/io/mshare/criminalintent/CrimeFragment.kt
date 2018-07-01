@@ -42,7 +42,7 @@ class CrimeFragment: Fragment() {
 //        val crimeId = activity?.intent?.getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID) as? UUID
         val crimeId = arguments?.getSerializable(ARG_CRIME_ID) as? UUID
         if (crimeId != null) {
-            val tmpCrime = CrimeLab.getCrime(crimeId)
+            val tmpCrime = CrimeLab.getInstance(activity as Context).getCrime(crimeId)
             if (tmpCrime != null) {
                 mCrime = tmpCrime
             }
@@ -86,6 +86,12 @@ class CrimeFragment: Fragment() {
         crime_solved.setOnCheckedChangeListener { button, isChecked ->
             mCrime.mSolved = isChecked
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        CrimeLab.getInstance(activity as Context).updateCrime(mCrime)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

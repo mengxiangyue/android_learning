@@ -4,12 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewParent
+import android.view.*
 import android.widget.Toast
 import kotlinx.android.synthetic.main.fragment_crime_list.view.*
 import kotlinx.android.synthetic.main.list_item_crime.*
@@ -17,6 +15,11 @@ import kotlinx.android.synthetic.main.list_item_crime.view.*
 
 class CrimeListFragment : Fragment() {
     private var mAdapter: CrimeAdapter? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_crime_list, container, false)
         view.crime_recycler_view.layoutManager = LinearLayoutManager(activity)
@@ -32,13 +35,47 @@ class CrimeListFragment : Fragment() {
 
     fun updateUI() {
 
-        val crimes = CrimeLab.getCrimes()
+        val crimes = CrimeLab.getInstance(activity as Context).getCrimes()
         if (mAdapter == null) {
             mAdapter = CrimeAdapter(crimes)
             view?.crime_recycler_view?.adapter = mAdapter
         } else {
+            mAdapter?.setCrimes(crimes)
             mAdapter?.notifyDataSetChanged()
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater?.inflate(R.menu.fragment_crime_list, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.new_crime -> {
+                val crime = Crime()
+                CrimeLab.getInstance(activity as Context).addCrime(crime)
+
+                val intent = CrimePagerActivity.newIntent(activity as Context, crime.mId)
+                startActivity(intent)
+                return true
+            }
+            R.id.show_subtitle -> {
+                updateSubtitle()
+                return true
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+    }
+
+    private fun updateSubtitle() {
+        val crimeCount = CrimeLab.getInstance(activity as Context).getCrimes().size
+        val subTitle = getString(R.string.subtitle_format, crimeCount)
+
+        val activity = activity as AppCompatActivity
+        activity.supportActionBar?.subtitle = subTitle
     }
 
     private inner class CrimeHolder : RecyclerView.ViewHolder, View.OnClickListener {
@@ -73,6 +110,10 @@ class CrimeListFragment : Fragment() {
 //            mCrimes = crimes
 //        }
         init {
+            mCrimes = crimes
+        }
+
+        fun setCrimes(crimes: List<Crime>) {
             mCrimes = crimes
         }
 
